@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>forums</title>
+</head>
+<body>
+  <h1>모든 게시물</h1>
+  <h3><a href="forums/new">새 글 작성</a></h3>
+  <ul>
+    <% for(let forum of forums){%>
+      <li><a href="forums/<%=forum._id%>"><%= forum.title %></a> - 작성자 : <%=forum.author%></li>
+    <% } %> 
+  </ul>
+</body>
+</html>
