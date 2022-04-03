@@ -1,18 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>forums</title>
-</head>
-<body>
+  <% layout("layouts/boilerPlate") %> 
   <h1>모든 게시물</h1>
-  <h3><a href="forums/new">새 글 작성</a></h3>
-  <ul>
+  <table class="table">
+    <thead>
+        <tr>
+          <th>이미지</th>
+          <th>제목</th>
+          <th>작성자</th>
+          <th>작성일자</th>
+        </tr>
+    </thead>
     <% for(let forum of forums){%>
-      <li><a href="forums/<%=forum._id%>"><%= forum.title %></a> - 작성자 : <%=forum.author%></li>
-    <% } %> 
-  </ul>
-</body>
-</html>
+      <tbody>
+        <tr>
+          <th>
+            <% if (forum.img) { %>
+              <input type="checkbox" disabled checked>
+            <%} else {%>
+              <input type="checkbox" disabled>
+            <%}  %> 
+          </th>
+          <th><a href="/forums/<%=forum._id%>"><%= forum.title %></a></th>
+          <th><%=forum.author%></th>
+          <th><%=forum.date%></th>
+        </tr>
+      </tbody>
+      <%}%>
+  </table>
+    <a href="/forums/new" class="btn btn-primary">글쓰기</a>

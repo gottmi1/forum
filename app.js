@@ -3,6 +3,7 @@ const app = express();
 const path = require("path");
 const mongoose = require("mongoose");
 const methodOverride = require("method-override");
+const ejsMate = require("ejs-mate");
 
 const Forum = require("./models/forum");
 
@@ -19,6 +20,7 @@ async function main() {
   await mongoose.connect("mongodb://localhost:27017/forum");
 }
 
+app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
 // view엔진을 ejs로  설정하면 ejs파일을 알아서 찾기 때문에 경로에 .ejs를 붙여줄 필요가 없다
 app.set("views", path.join(__dirname, "views"));
@@ -49,6 +51,7 @@ app.post("/forums", async (req, res) => {
   // res.send(req.body);
   const forum = new Forum(req.body.forum);
   await forum.save();
+  console.log(req.body.forum);
   res.redirect(`/forums/${forum._id}`);
 });
 // post요청을 받았을 때 실행됨

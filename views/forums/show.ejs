@@ -1,22 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-<body>
-  <h1><%= forums.title %></h1>
-  <h4><%= forums.author %></h4>
-  <h4><%= forums.contents %></h4>
+<% layout('layouts/boilerPlate') %> 
 
-  <footer>
-    <a href="/forums/<%=forums._id%>/edit">수정</a>
-    <a href="/forums">처음 화면으로</a>
-  </footer>
-  <form action="/forums/<%=forums._id%>?_method=DELETE" method="post">
-    <button>삭제</button>
-  </form>
-</body>
-</html>
+
+  <div class="row">
+    <div class="col-8 offset-2">
+      <h1 class="card-title"><%= forums.title %></h1>
+      <h5 class="text-muted">작성자 : <%= forums.author %></h5>
+      <div class="card mb-5">
+        <img src="<%=forums.img%>" class="card-img-top" alt="...">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"><%= forums.contents %></li>
+        </ul>
+        <div class="card-body">
+          <a href="/forums/<%=forums._id%>/edit" class="card-link btn btn-warning">수정</a>
+          <form class="d-inline" action="/forums/<%=forums._id%>?_method=DELETE" method="post">
+            <button class="btn btn-danger">삭제</button>
+          </form>
+        </div>
+        <footer class="card-footer">
+          <a href="/forums">글 목록으로</a>
+        </footer>
+      </div>
+    </div>
+    
+
+
+
+  
+</div>
+
