@@ -2,19 +2,23 @@
   <div class="row">
     <h1 class="text-center">글 작성하기</h1>
     <div class="col-6 offset-3">
-      <form class="mb-3" action="/forums" method="POST">
+      <form class="mb-3 validated-form" action="/forums" method="POST" novalidate>
+        <!-- novalidate는 required등의 모든 요청을 방지함-->
         <div class="mb-3">
           <label class="form-label" for="title">제목</label>
-          <input class="form-control" type="text" id="title" name="forum[title]">
+          <input class="form-control" type="text" id="title" name="forum[title]" required>
+          <div class="valid-feedback">유효한 입력입니다.</div>
           <!-- name으로 구분해주는 건 컨텐츠를 그룹화할 수 있는 좋은 방법이다 -->
         </div>
         <div class="mb-3">
           <label class="form-label" for="author">작성자</label>
-          <input class="form-control" type="text" id="author" name="forum[author]">
+          <input class="form-control" type="text" id="author" name="forum[author]" required>
+          <div class="valid-feedback">유효한 입력입니다.</div>
         </div>
         <div class="mb-3">
           <label class="form-label" for="img">이미지</label>
           <input class="form-control" type="text" id="img" name="forum[img]">
+          <div class="valid-feedback">유효한 입력입니다.</div>
         </div>
         <div class="mb-3">
           <label class="form-label" for="date">작성일자</label>
@@ -23,12 +27,11 @@
         </div>
         <div class="mb-3">
           <label for="contents" class="form-label">내용</label>
-          <textarea name="forum[contents]" class="form-control" id="contents" cols="30" rows="5"></textarea>
+          <textarea name="forum[contents]" class="form-control" id="contents" cols="30" rows="5" required></textarea>
+          <div class="valid-feedback">유효한 입력입니다.</div>
         </div>
         <button class="btn btn-success col-12">작성</button>
       </form>
       <a href="/forums">뒤로</a>
     </div>
-  </div>
-
-  
+  </div>  

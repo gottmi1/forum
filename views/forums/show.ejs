@@ -6,7 +6,9 @@
       <h1 class="card-title"><%= forums.title %></h1>
       <h5 class="text-muted">작성자 : <%= forums.author %></h5>
       <div class="card mb-5">
-        <img src="<%=forums.img%>" class="card-img-top" alt="...">
+        <% if (forums.img) { %>
+          <img src="<%=forums.img%>" class="card-img-top" alt="...">
+        <%}%>
         <ul class="list-group list-group-flush">
           <li class="list-group-item"><%= forums.contents %></li>
         </ul>

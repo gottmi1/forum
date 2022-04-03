@@ -5,7 +5,12 @@ const mongoose = require("mongoose");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 
+const { forumSchema } = require("./schemas.js");
+
 const Forum = require("./models/forum");
+
+const catchAsync = require("./utils/catchAsync");
+const ExpressError = require("./utils/ExpressError");
 
 main()
   .then(() => {
@@ -31,6 +36,16 @@ app.use(express.urlencoded({ extended: true }));
 // req.body같은 걸 parse해 주는 역할
 app.use(methodOverride("_method"));
 
+const validateForum = (req, res, next) => {
+  const { error } = forumSchema.validate(req.body);
+  if (error) {
+    const msg = error.details.map((el) => el.message).join(",");
+    throw new ExpressError(msg, 400);
+  } else {
+    next();
+  }
+};
+
 app.get("/", (req, res) => {
   res.render("home");
 });
@@ -47,37 +62,65 @@ app.get("/forums/new", (req, res) => {
 });
 // /:id 아래에 /abcd.. 이런 게 있으면 그 문자를 id로 처리하기 때문에 위로 놓아야 함
 
-app.post("/forums", async (req, res) => {
-  // res.send(req.body);
-  const forum = new Forum(req.body.forum);
-  await forum.save();
-  console.log(req.body.forum);
-  res.redirect(`/forums/${forum._id}`);
-});
+app.post(
+  "/forums",
+  validateForum,
+  catchAsync(async (req, res, next) => {
+    const forum = new Forum(req.body.forum);
+    await forum.save();
+    res.redirect(`/forums/${forum._id}`);
+  })
+);
 // post요청을 받았을 때 실행됨
 
-app.get("/forums/:id", async (req, res) => {
-  const forums = await Forum.findById(req.params.id);
-  res.render("forums/show", { forums });
-});
+app.get(
+  "/forums/:id",
+  catchAsync(async (req, res) => {
+    const forums = await Forum.findById(req.params.id);
+    res.render("forums/show", { forums });
+  })
+);
 
-app.get("/forums/:id/edit", async (req, res) => {
-  const forums = await Forum.findById(req.params.id);
-  res.render("forums/edit", { forums });
-});
+app.get(
+  "/forums/:id/edit",
+  catchAsync(async (req, res) => {
+    const forums = await Forum.findById(req.params.id);
+    res.render("forums/edit", { forums });
+  })
+);
 
-app.put("/forums/:id", async (req, res) => {
-  const { id } = req.params;
-  const forums = await Forum.findByIdAndUpdate(id, { ...req.body.forum });
-  // 두번쨰 인수는 업데이트할 실제 쿼리. 안에 있는 내용을 전부 가져와야해서 ...을 사용함?
-  res.redirect(`/forums/${forums._id}`);
-});
+app.put(
+  "/forums/:id",
+  validateForum,
+  catchAsync(async (req, res) => {
+    const { id } = req.params;
+    const forums = await Forum.findByIdAndUpdate(id, { ...req.body.forum });
+    // 두번쨰 인수는 업데이트할 실제 쿼리. 안에 있는 내용을 전부 가져와야해서 ...을 사용함?
+    res.redirect(`/forums/${forums._id}`);
+  })
+);
 
-app.delete("/forums/:id", async (req, res) => {
-  const { id } = req.params;
-  const forums = await Forum.findByIdAndDelete(id);
-  res.redirect("/forums");
+app.delete(
+  "/forums/:id",
+  catchAsync(async (req, res) => {
+    const { id } = req.params;
+    const forums = await Forum.findByIdAndDelete(id);
+    res.redirect("/forums");
+  })
+);
+
+app.all("*", (req, res, next) => {
+  next(new ExpressError("페이지를 찾을 수 없습니다", 404));
 });
+// app.all은 모든 요청에대해 응답하는데 아래에 놓을 경우 상단에 있는 모든 코드에 요청이 전해지지 않았을 때만 실행된다(따로 작성하지 않은 에러는 얘가 사용됨)
+
+// 위에서 받은 에러를 next해서 아래 err로 받아준다
+app.use((err, req, res, next) => {
+  const { statusCode = "500" } = err;
+  if (!err.message) err.message = "에러가 발생했습니다.";
+  res.status(statusCode).render("error", { err });
+});
+// 오류를 만들고 싶은 곳 어디서든 new ExpressError를 작성해서 next로 전달해주면 스테이터스 코드를 정해줄 수 있다
 
 app.listen(3000, () => {
   console.log("3000번 포트에서 서빙중");

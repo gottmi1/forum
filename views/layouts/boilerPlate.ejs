@@ -17,6 +17,29 @@
   <%- include("../partials/footer")%>
 
 </body>
+<script>
+  // Example starter JavaScript for disabling form submissions if there are invalid fields
+(function () {
+'use strict'
+
+// Fetch all the forms we want to apply custom Bootstrap validation styles to
+const forms = document.querySelectorAll('.validated-form')
+
+// Loop over them and prevent submission
+Array.from(forms)
+  .forEach(function (form) {
+    form.addEventListener('submit', function (event) {
+      if (!form.checkValidity()) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+
+      form.classList.add('was-validated')
+    }, false)
+  })
+})()
+</script>
 </html>
 
 <!-- 이렇게 하고 layout(..)을 해주면 모든 레이아웃이 사용된 모든 ejs파일의 내용은 위 body에 들어가게 된다 -->
+
