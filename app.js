@@ -4,13 +4,12 @@ const path = require("path");
 const mongoose = require("mongoose");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
+const session = require("express-session");
+const flash = require("connect-flash");
 
-const { forumSchema, commentSchema } = require("./schemas.js");
+const forumRouter = require("./routes/forums");
+const commentRouter = require("./routes/comments");
 
-const Forum = require("./models/forum");
-const Comment = require("./models/comment");
-
-const catchAsync = require("./utils/catchAsync");
 const ExpressError = require("./utils/ExpressError");
 
 main()
@@ -36,122 +35,43 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: true }));
 // req.body같은 걸 parse해 주는 역할
 app.use(methodOverride("_method"));
-
-const validateForum = (req, res, next) => {
-  const { error } = forumSchema.validate(req.body);
-  if (error) {
-    const msg = error.details.map((el) => el.message).join(",");
-    // error.details 에 있는 모든 항목을 출력함 .join은 에러가 여러개일 경우 ,로 구분해주는 역할
-    throw new ExpressError(msg, 400);
-  } else {
-    next();
-  }
+app.use(express.static(path.join(__dirname, "public")));
+// public폴더 안에 있는 파일들을 꺼내올 때 경로를 따로 설정할 필요없이 /item으로 바로 불러올 수 있게 함
+const sessionConfig = {
+  secret: "abcd",
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
+    // 만료 기한 설정 Date.now는 밀리초 단위를 반환하기 때문에 일주일 후 만료를 설정하려면 이렇게 하면 됨 만료 기한이 없으면 쿠키를 지우기 전까지 평생 유지된다
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+    httponly: true,
+    // 기본으로 설정돼 있긴 하지만 httpOnly 항목에 체크마크를 넣어줌(클라이언트 측 스크립트에서 해당 쿠키에 접근할 수 없고 xss에 결함이 있거나 사용자가 결함을 일으키는 링크에 접근할 시 브라우저가 제 3자에게 쿠키를 유출하지 않도록한다고 함..) 그냥 추가할 수 있는 간단한 보안코드
+  },
 };
+app.use(session(sessionConfig));
+// 개발자도구 -> 어플리케이션 -> 쿠키에 connect.sid를 생성하기 위함
+app.use(flash());
+// req.flash에 키,값 쌍을 전달해 플래시를 생성한다 템플릿에 값을 전달하지 않도록 미들웨어를 사용함
 
-const validateComment = (req, res, next) => {
-  const { error } = commentSchema.validate(req.body);
-  if (error) {
-    const msg = error.details.map((el) => el.message).join(",");
-    throw new ExpressError(msg, 400);
-  } else {
-    next();
-  }
-};
+app.use((req, res, next) => {
+  res.locals.success = req.flash("success");
+  res.locals.del = req.flash("del");
+  res.locals.update = req.flash("update");
+  next();
+  //next가 반드시 필요하다
+});
+// 키값이 success인 플래시를 가져와 로컬 변수(뒤 success)에 접근
 
 app.get("/", (req, res) => {
   res.render("home");
 });
 
-app.get("/forums", async (req, res) => {
-  const forums = await Forum.find({});
-  //findbyId등은 구조상 비동기만 사용할 수 있기 때문에 async,await을 사용해 준다
-  res.render("forums/index", { forums });
-  // res.render의 두번째 인수로 {abcd}를 해주면 해당 ejs에서 abcd객체 내부에 접근할 수 있다. 이렇게 접근하면 <%= abcd.title %>등으로 사용할 수 있음
-});
+app.use("/forums", forumRouter);
+//forums 라우트
 
-app.get("/forums/new", (req, res) => {
-  res.render("forums/new");
-});
-// /:id 아래에 /abcd.. 이런 게 있으면 그 문자를 id로 처리하기 때문에 위로 놓아야 함
-
-app.post(
-  "/forums",
-  validateForum,
-  catchAsync(async (req, res, next) => {
-    const forum = new Forum(req.body.forum);
-    await forum.save();
-    res.redirect(`/forums/${forum._id}`);
-  })
-);
-// post요청을 받았을 때 실행됨
-
-app.get(
-  "/forums/:id",
-  catchAsync(async (req, res) => {
-    const forums = await Forum.findById(req.params.id).populate("comments");
-    // .populate부턴 댓글을 추가하기 위해서 보강한 부분임
-    res.render("forums/show", { forums });
-  })
-);
-
-app.get(
-  "/forums/:id/edit",
-  catchAsync(async (req, res) => {
-    const forums = await Forum.findById(req.params.id);
-    res.render("forums/edit", { forums });
-  })
-);
-
-app.put(
-  "/forums/:id",
-  validateForum,
-  catchAsync(async (req, res) => {
-    const { id } = req.params;
-    const forums = await Forum.findByIdAndUpdate(id, { ...req.body.forum });
-    // 두번쨰 인수는 업데이트할 실제 쿼리. 안에 있는 내용을 전부 가져와야해서 ...을 사용함?
-    res.redirect(`/forums/${forums._id}`);
-  })
-);
-
-app.delete(
-  "/forums/:id",
-  catchAsync(async (req, res) => {
-    const { id } = req.params;
-    const forums = await Forum.findByIdAndDelete(id);
-    res.redirect("/forums");
-  })
-);
-
-// 여기까지 forums 라우트
-
-// 여기부터 comment 라우트
-
-app.post(
-  "/forums/:id/comments",
-  validateComment,
-  catchAsync(async (req, res) => {
-    const { id } = req.params;
-    const forums = await Forum.findById(id);
-    const comment = new Comment(req.body.comment);
-    forums.comments.push(comment);
-    await comment.save();
-    await forums.save();
-    res.redirect(`/forums/${forums._id}`);
-  })
-);
-app.delete(
-  "/forums/:id/comments/:commentId",
-  catchAsync(async (req, res) => {
-    const { id, commentId } = req.params;
-    const forums = await Forum.findByIdAndUpdate(id, {
-      $pull: { comments: commentId },
-    });
-    // Mongo에서 사용하는 배열 수정연산자인 $pull(배열에 있는 인스턴스 중 특정조건을 만족하는 값을 지움)를 사용한다. 가져온 commentId와 일치하는 리뷰를 꺼는데 여기서 comments는 배열이고 거기서 값을 꺼내는 거임 리뷰 배열에서 해당 리뷰의 참조를 삭제하고 그 다음 리뷰 자체를 삭제
-    const comment = await Comment.findByIdAndDelete(commentId);
-    res.redirect(`/forums/${id}`);
-  })
-);
-// Forum에 접근하여 해당하는 commentId를 가진 댓글만 지우고 싶음
+app.use("/forums/:id/comments", commentRouter);
+// comment 라우트
 
 app.all("*", (req, res, next) => {
   next(new ExpressError("페이지를 찾을 수 없습니다", 404));
