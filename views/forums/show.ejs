@@ -5,12 +5,13 @@
     <div class="col-8 offset-2">
       <h1 class="card-title"><%= forums.title %></h1>
       <h5 class="text-muted">작성자 : <%= forums.author %></h5>
-      <div class="card mb-5">
+      <div class="card mb-4">
         <% if (forums.img) { %>
           <img src="<%=forums.img%>" class="card-img-top" alt="...">
         <%}%>
         <ul class="list-group list-group-flush">
           <li class="list-group-item"><%= forums.contents %></li>
+          <li class="list-group-item"><%=forums.date%></li>
         </ul>
         <div class="card-body">
           <a href="/forums/<%=forums._id%>/edit" class="card-link btn btn-warning">수정</a>
@@ -23,10 +24,26 @@
         </footer>
       </div>
     </div>
-    
+</div>
 
-
-
-  
+<div class="row mb-5">
+  <div class="col-8 offset-2 bg-light py-4 px-4">
+    <h4 class="card-title">comments</h2>
+    <div class="mt-4 mb-4">
+    <% for(let comment of forums.comments) {%>
+        <div class="mb-1 d-flex justify-content-around">
+          <p class="col-8 my-2">댓글 : <%=comment.body%></p> 
+          <form class="align-self-center" action="/forums/<%=forums._id%>/comments/<%=comment._id%>?_method=DELETE" method="POST"><button class="btn btn-sm btn-danger py-1 px-1">삭제</button></form>
+        </div>
+      <% } %> 
+    </div> 
+    <form class="validated-form" action="/forums/<%=forums._id%>/comments" method="POST" novalidate>
+      <div class="mb-3">
+        <label class="form-label" for="body">댓글 작성하기</label>
+        <textarea class="form-control" name="comment[body]" id="body" cols="30" rows="2" required></textarea>
+      </div>
+      <button class="btn btn-success">쓰기</button>
+    </form>
+  </div>
 </div>
 

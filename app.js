@@ -5,9 +5,10 @@ const mongoose = require("mongoose");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 
-const { forumSchema } = require("./schemas.js");
+const { forumSchema, commentSchema } = require("./schemas.js");
 
 const Forum = require("./models/forum");
+const Comment = require("./models/comment");
 
 const catchAsync = require("./utils/catchAsync");
 const ExpressError = require("./utils/ExpressError");
@@ -38,6 +39,17 @@ app.use(methodOverride("_method"));
 
 const validateForum = (req, res, next) => {
   const { error } = forumSchema.validate(req.body);
+  if (error) {
+    const msg = error.details.map((el) => el.message).join(",");
+    // error.details 에 있는 모든 항목을 출력함 .join은 에러가 여러개일 경우 ,로 구분해주는 역할
+    throw new ExpressError(msg, 400);
+  } else {
+    next();
+  }
+};
+
+const validateComment = (req, res, next) => {
+  const { error } = commentSchema.validate(req.body);
   if (error) {
     const msg = error.details.map((el) => el.message).join(",");
     throw new ExpressError(msg, 400);
@@ -76,7 +88,8 @@ app.post(
 app.get(
   "/forums/:id",
   catchAsync(async (req, res) => {
-    const forums = await Forum.findById(req.params.id);
+    const forums = await Forum.findById(req.params.id).populate("comments");
+    // .populate부턴 댓글을 추가하기 위해서 보강한 부분임
     res.render("forums/show", { forums });
   })
 );
@@ -108,6 +121,37 @@ app.delete(
     res.redirect("/forums");
   })
 );
+
+// 여기까지 forums 라우트
+
+// 여기부터 comment 라우트
+
+app.post(
+  "/forums/:id/comments",
+  validateComment,
+  catchAsync(async (req, res) => {
+    const { id } = req.params;
+    const forums = await Forum.findById(id);
+    const comment = new Comment(req.body.comment);
+    forums.comments.push(comment);
+    await comment.save();
+    await forums.save();
+    res.redirect(`/forums/${forums._id}`);
+  })
+);
+app.delete(
+  "/forums/:id/comments/:commentId",
+  catchAsync(async (req, res) => {
+    const { id, commentId } = req.params;
+    const forums = await Forum.findByIdAndUpdate(id, {
+      $pull: { comments: commentId },
+    });
+    // Mongo에서 사용하는 배열 수정연산자인 $pull(배열에 있는 인스턴스 중 특정조건을 만족하는 값을 지움)를 사용한다. 가져온 commentId와 일치하는 리뷰를 꺼는데 여기서 comments는 배열이고 거기서 값을 꺼내는 거임 리뷰 배열에서 해당 리뷰의 참조를 삭제하고 그 다음 리뷰 자체를 삭제
+    const comment = await Comment.findByIdAndDelete(commentId);
+    res.redirect(`/forums/${id}`);
+  })
+);
+// Forum에 접근하여 해당하는 commentId를 가진 댓글만 지우고 싶음
 
 app.all("*", (req, res, next) => {
   next(new ExpressError("페이지를 찾을 수 없습니다", 404));

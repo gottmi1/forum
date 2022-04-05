@@ -9,3 +9,11 @@ module.exports.forumSchema = Joi.object({
     date: Joi.string(),
   }).required(),
 });
+
+module.exports.commentSchema = Joi.object({
+  comment: Joi.object({
+    body: Joi.string().required(),
+  }).required(),
+});
+
+// db에 저장하기 전 유효성 검사실행
