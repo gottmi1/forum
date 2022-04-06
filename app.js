@@ -6,6 +6,9 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const session = require("express-session");
 const flash = require("connect-flash");
+const passport = require("passport");
+const localStrategy = require("passport-local");
+const User = require("./models/user");
 
 const forumRouter = require("./routes/forums");
 const commentRouter = require("./routes/comments");
@@ -53,6 +56,18 @@ app.use(session(sessionConfig));
 // 개발자도구 -> 어플리케이션 -> 쿠키에 connect.sid를 생성하기 위함
 app.use(flash());
 // req.flash에 키,값 쌍을 전달해 플래시를 생성한다 템플릿에 값을 전달하지 않도록 미들웨어를 사용함
+app.use(passport.initialize());
+app.use(passport.session());
+// passport.session은 app.use session아래에 있어야함
+
+passport.use(new localStrategy(User.authenticate()));
+// localStarategy를 사용하라고 명령하는 코드.
+
+passport.serializeUser(User.serializeUser());
+// passport에게 사용자를 어떻게 직렬화하는지 알려주고, 직렬화는 어떻게 데이터를 얻고 세션에서 사용자를 저장하는지를 참조한다
+passport.deserializeUser(User.deserializeUser());
+// models/user의 12번 줄에 작성된 플러그인(passport-local-mongoose) 덕분에 이 두개의 메서드를 사용할 수가 있다
+// 갇단하게 위 두 줄은 세션에서 저장할지, 저장하지 않을지 지정한다
 
 app.use((req, res, next) => {
   res.locals.success = req.flash("success");
