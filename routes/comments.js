@@ -2,31 +2,25 @@ const express = require("express");
 const router = express.Router({ mergeParams: true });
 // mergeParams: true를 해야 라우터의 경로에 포함된 ../:id 를 가져올 수 있음(안하면 {}로 빈 객체가 뜬다) 라우터를 사용할 때 중요하니까 기억
 
-const { commentSchema } = require("../schemas.js");
-
+const {
+  isLoggedIn,
+  validateComment,
+  isCommentAuthor,
+} = require("../middleware");
 const Forum = require("../models/forum");
 const Comment = require("../models/comment");
 
 const catchAsync = require("../utils/catchAsync");
-const ExpressError = require("../utils/ExpressError");
-
-const validateComment = (req, res, next) => {
-  const { error } = commentSchema.validate(req.body);
-  if (error) {
-    const msg = error.details.map((el) => el.message).join(",");
-    throw new ExpressError(msg, 400);
-  } else {
-    next();
-  }
-};
 
 router.post(
   "/",
+  isLoggedIn,
   validateComment,
   catchAsync(async (req, res) => {
     const { id } = req.params;
     const forums = await Forum.findById(id);
     const comment = new Comment(req.body.comment);
+    comment.author = req.user._id;
     forums.comments.push(comment);
     await comment.save();
     await forums.save();
@@ -36,6 +30,8 @@ router.post(
 );
 router.delete(
   "/:commentId",
+  isLoggedIn,
+  isCommentAuthor,
   catchAsync(async (req, res) => {
     const { id, commentId } = req.params;
     const forums = await Forum.findByIdAndUpdate(id, {

@@ -47,6 +47,7 @@ router.post(
   }),
   (req, res) => {
     const redirectUrl = req.session.returnTo || "/forums";
+    delete req.session.returnTo;
     res.redirect(redirectUrl);
   }
 );

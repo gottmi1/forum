@@ -1,30 +1,18 @@
 const express = require("express");
 const router = express.Router();
 
-const { forumSchema } = require("../schemas.js");
-const { isLoggedIn } = require("../middleware");
+const { isLoggedIn, isAuthor, validateForum } = require("../middleware");
 
 const Forum = require("../models/forum");
 const Comment = require("../models/comment");
 
 const catchAsync = require("../utils/catchAsync");
-const ExpressError = require("../utils/ExpressError");
-
-const validateForum = (req, res, next) => {
-  const { error } = forumSchema.validate(req.body);
-  if (error) {
-    const msg = error.details.map((el) => el.message).join(",");
-    // error.details 에 있는 모든 항목을 출력함 .join은 에러가 여러개일 경우 ,로 구분해주는 역할
-    throw new ExpressError(msg, 400);
-  } else {
-    next();
-  }
-};
 
 router.get("/", async (req, res) => {
-  const forums = await Forum.find({});
+  const forums = await Forum.find({}).populate("author");
   //findbyId등은 구조상 비동기만 사용할 수 있기 때문에 async,await을 사용해 준다
   res.render("forums/index", { forums });
+  console.log(forums);
   // res.render의 두번째 인수로 {abcd}를 해주면 해당 ejs에서 abcd객체 내부에 접근할 수 있다. 이렇게 접근하면 <%= abcd.title %>등으로 사용할 수 있음
 });
 
@@ -39,6 +27,7 @@ router.post(
   validateForum,
   catchAsync(async (req, res, next) => {
     const forum = new Forum(req.body.forum);
+    forum.author = req.user._id;
     await forum.save();
     req.flash("success", "게시물이 작성되었습니다.");
     res.redirect(`/forums/${forum._id}`);
@@ -49,7 +38,16 @@ router.post(
 router.get(
   "/:id",
   catchAsync(async (req, res) => {
-    const forums = await Forum.findById(req.params.id).populate("comments");
+    const forums = await await Forum.findById(req.params.id)
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+        },
+      })
+      // 찾는 글의 댓글 배열에 있는 모든 댓글을 forum.comments에 채워넣으라는 코드. commnet의 username도 추적해서 접근할 수 있어진다.
+      .populate("author");
+    console.log(forums);
     // .populate부턴 댓글을 추가하기 위해서 보강한 부분임
     if (!forums) {
       req.flash("del", "게시물을 찾을 수 없습니다.");
@@ -63,6 +61,7 @@ router.get(
 router.get(
   "/:id/edit",
   isLoggedIn,
+  isAuthor,
   catchAsync(async (req, res) => {
     const forums = await Forum.findById(req.params.id);
     if (!forums) {
@@ -77,11 +76,18 @@ router.get(
 router.put(
   "/:id",
   isLoggedIn,
+  isAuthor,
   validateForum,
   catchAsync(async (req, res) => {
     const { id } = req.params;
+    // const forums = await Forum.findById(id);
+    // if (!forums.author.equals(req.user._id)) {
+    //   req.flash("del", "권한이 없습니다.");
+    //   res.redirect(`/forums/${forums._id}`);
+    // } 미들웨어로 쓰기 때문에 지워줌
+    // const forums = await Forum.findByIdAndUpdate(id, { ...req.body.forum });
     const forums = await Forum.findByIdAndUpdate(id, { ...req.body.forum });
-    // 두번쨰 인수는 업데이트할 실제 쿼리. 안에 있는 내용을 전부 가져와야해서 ...을 사용함?
+    // 두번쨰 인수는 업데이트할 실제 쿼리. 안에 있는 내용을 전부 가져와야해서 ...을 사용하는듯?
     req.flash("update", "게시물이 업데이트 되었습니다.");
     res.redirect(`/forums/${forums._id}`);
   })
@@ -90,9 +96,10 @@ router.put(
 router.delete(
   "/:id",
   isLoggedIn,
+  isAuthor,
   catchAsync(async (req, res) => {
     const { id } = req.params;
-    const forums = await Forum.findByIdAndDelete(id);
+    const forum = await Forum.findByIdAndDelete(id);
     req.flash("del", "게시물이 삭제되었습니다.");
     res.redirect("/forums");
   })

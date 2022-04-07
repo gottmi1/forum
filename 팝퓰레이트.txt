@@ -1,0 +1,17 @@
+ref로 설정한 model을 불러오면 정보를 합쳐줄 수 있음
+
+ex)
+  const forums = await Forum.find({});
+  일 때,
+
+author = _id : new ObjectId... 만 달랑 있음
+
+  const forums = await Forum.find({}).populate("author");
+
+써주면 
+author: {
+      _id: new ObjectId("624f41c05c54c637fa7f45dc"),
+      email: 'fasf@gg',
+      username: 'zz123',
+      __v: 0
+    },
