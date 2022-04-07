@@ -7,11 +7,12 @@ const ejsMate = require("ejs-mate");
 const session = require("express-session");
 const flash = require("connect-flash");
 const passport = require("passport");
-const localStrategy = require("passport-local");
+const LocalStrategy = require("passport-local");
 const User = require("./models/user");
 
 const forumRouter = require("./routes/forums");
 const commentRouter = require("./routes/comments");
+const userRouter = require("./routes/users");
 
 const ExpressError = require("./utils/ExpressError");
 
@@ -60,9 +61,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 // passport.session은 app.use session아래에 있어야함
 
-passport.use(new localStrategy(User.authenticate()));
+passport.use(new LocalStrategy(User.authenticate()));
 // localStarategy를 사용하라고 명령하는 코드.
 
+// 아래 두 헬퍼메서드는 세션을 이용하여 고유의 정보를 저장함
 passport.serializeUser(User.serializeUser());
 // passport에게 사용자를 어떻게 직렬화하는지 알려주고, 직렬화는 어떻게 데이터를 얻고 세션에서 사용자를 저장하는지를 참조한다
 passport.deserializeUser(User.deserializeUser());
@@ -70,20 +72,27 @@ passport.deserializeUser(User.deserializeUser());
 // 갇단하게 위 두 줄은 세션에서 저장할지, 저장하지 않을지 지정한다
 
 app.use((req, res, next) => {
+  console.log(req.session);
+  res.locals.currentUser = req.user;
+  // 로그인 되어있는지 안되어있는지. 로그인이 안 되어 있으면 undefined반환함
   res.locals.success = req.flash("success");
   res.locals.del = req.flash("del");
   res.locals.update = req.flash("update");
   next();
-  //next가 반드시 필요하다
+  //next가 반드시 필요함
 });
 // 키값이 success인 플래시를 가져와 로컬 변수(뒤 success)에 접근
+// app.use로 모든 요청에 응답하기 때문에 어느 요청이든 보여야 할만한 것들을 모아둔다
 
 app.get("/", (req, res) => {
   res.render("home");
 });
 
+app.use("/", userRouter);
+// user 라우트
+
 app.use("/forums", forumRouter);
-//forums 라우트
+// forums 라우트
 
 app.use("/forums/:id/comments", commentRouter);
 // comment 라우트

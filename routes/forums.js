@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const { forumSchema } = require("../schemas.js");
+const { isLoggedIn } = require("../middleware");
 
 const Forum = require("../models/forum");
 const Comment = require("../models/comment");
@@ -27,13 +28,14 @@ router.get("/", async (req, res) => {
   // res.render의 두번째 인수로 {abcd}를 해주면 해당 ejs에서 abcd객체 내부에 접근할 수 있다. 이렇게 접근하면 <%= abcd.title %>등으로 사용할 수 있음
 });
 
-router.get("/new", (req, res) => {
+router.get("/new", isLoggedIn, (req, res) => {
   res.render("forums/new");
 });
 // /:id 아래에 /abcd.. 이런 게 있으면 그 문자를 id로 처리하기 때문에 위로 놓아야 함
 
 router.post(
   "/",
+  isLoggedIn,
   validateForum,
   catchAsync(async (req, res, next) => {
     const forum = new Forum(req.body.forum);
@@ -60,6 +62,7 @@ router.get(
 
 router.get(
   "/:id/edit",
+  isLoggedIn,
   catchAsync(async (req, res) => {
     const forums = await Forum.findById(req.params.id);
     if (!forums) {
@@ -73,6 +76,7 @@ router.get(
 
 router.put(
   "/:id",
+  isLoggedIn,
   validateForum,
   catchAsync(async (req, res) => {
     const { id } = req.params;
@@ -85,6 +89,7 @@ router.put(
 
 router.delete(
   "/:id",
+  isLoggedIn,
   catchAsync(async (req, res) => {
     const { id } = req.params;
     const forums = await Forum.findByIdAndDelete(id);

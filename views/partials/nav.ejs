@@ -9,6 +9,16 @@
           <a class="nav-link active" aria-current="page" href="/forums">모든 글 보기</a>
           <a class="nav-link" href="/forums/new">글 쓰기</a>
         </div>
+        <div class="navbar-nav ml-auto">
+          <% if(!currentUser) {%> 
+          <a class="nav-link" href="/login">로그인</a>
+          <a class="nav-link" href="/register">회원가입</a>
+          <% }else {%> 
+          <a class="nav-link" href="/logout">로그아웃</a>
+          <% } %> 
+          <!-- app.use로 currentUser를 항상 감시중이기 때문에 currentUser가 있을 때, 없을 때 각각 대응해줌 -->
+        </div>
       </div>
+      
     </div>
   </nav>
