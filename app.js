@@ -72,7 +72,7 @@ passport.deserializeUser(User.deserializeUser());
 // 갇단하게 위 두 줄은 세션에서 저장할지, 저장하지 않을지 지정한다
 
 app.use((req, res, next) => {
-  console.log(req.session);
+  // console.log(req.session);
   res.locals.currentUser = req.user;
   // 로그인 되어있는지 안되어있는지. 로그인이 안 되어 있으면 undefined반환함
   res.locals.success = req.flash("success");

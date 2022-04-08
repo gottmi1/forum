@@ -3,6 +3,7 @@ const Comment = require("./models/comment");
 const { forumSchema, commentSchema } = require("./schemas.js");
 const ExpressError = require("./utils/ExpressError");
 
+// 얘는 로그인 되어있는지 확인
 module.exports.isLoggedIn = (req, res, next) => {
   // console.log(req.user); 현재 로그인 된 정보
   if (!req.isAuthenticated()) {
@@ -17,6 +18,7 @@ module.exports.isLoggedIn = (req, res, next) => {
 };
 // 로그인 되지 않은 사용자가 접근했을 때 사용되는 미들웨어, get,post에 모두 적용하여 접근을 막는다
 
+// 얘는 게시물에 에러가 있을 경우 서버가 끊기지 않고 에러를 띄워주는 역할
 module.exports.validateForum = (req, res, next) => {
   const { error } = forumSchema.validate(req.body);
   if (error) {
@@ -28,6 +30,7 @@ module.exports.validateForum = (req, res, next) => {
   }
 };
 
+// 위와 마찬가지로 댓글에 문제가 있을경우 에러를 띄워주는 역할(사실상 볼 일 없음)
 module.exports.validateComment = (req, res, next) => {
   const { error } = commentSchema.validate(req.body);
   if (error) {
@@ -38,6 +41,7 @@ module.exports.validateComment = (req, res, next) => {
   }
 };
 
+// 로그인 되어있는 id(req.user._id)가 게시물의 작성자(forums.author)와 같은지 확인하는 미들웨어
 module.exports.isAuthor = async (req, res, next) => {
   const { id } = req.params;
   const forums = await Forum.findById(id);
@@ -48,6 +52,8 @@ module.exports.isAuthor = async (req, res, next) => {
   next();
 };
 // 업데이트나 삭제할 때 find와 동시에하면 권한이 있는지 확인할 시간을 주지않기 때문에 findByIdUpdate,Delete 전에 나눠서 동작시킨다
+
+// 위와 마찬가지인데 댓글 작성자인지 확인함
 module.exports.isCommentAuthor = async (req, res, next) => {
   const { id, commentId } = req.params;
   const comment = await Comment.findById(commentId);
