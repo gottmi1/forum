@@ -45,6 +45,7 @@ router
   .put(
     isLoggedIn,
     isAuthor,
+    upload.array("img"),
     validateForum,
     catchAsync(forumControl.updateForum)
   )

@@ -64,6 +64,10 @@ module.exports.updateForum = async (req, res) => {
   // const forums = await Forum.findByIdAndUpdate(id, { ...req.body.forum });
   const forums = await Forum.findByIdAndUpdate(id, { ...req.body.forum });
   // 두번쨰 인수는 업데이트할 실제 쿼리. 안에 있는 내용을 전부 가져와야해서 ...을 사용하는듯?
+  const img = req.files.map((f) => ({ url: f.path, filename: f.filename }));
+  forums.imgs.push(...img); // 배열이 아닌 별개 인수로 전달
+  // 기존 이미지를 덮어쓰지 않고 추가하는 기능 밖에 없음. 이미지 삭제는 따로 진행함
+  await forums.save();
   req.flash("update", "게시물이 업데이트 되었습니다.");
   res.redirect(`/forums/${forums._id}`);
 };

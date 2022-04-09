@@ -2,7 +2,7 @@
 <div class="row">
   <h1 class="text-center">글 수정</h1>
   <div class="col-6 offset-3">
-    <form class="mb-3 validated-form" action="/forums/<%=forums._id%>?_method=PUT" method="POST" novalidate>
+    <form class="mb-3 validated-form" action="/forums/<%=forums._id%>?_method=PUT" method="POST" novalidate enctype="multipart/form-data">
       <div class="mb-3">
         <label class="form-label" for="title">제목</label>
         <input class="form-control" type="text" id="title" value="<%=forums.title%>" name="forum[title]" required>
@@ -15,9 +15,10 @@
         <div class="valid-feedback">유효한 입력입니다.</div>
       </div> -->
       <div class="mb-3">
-        <label class="form-label" for="img">이미지</label>
-        <input class="form-control" value="<%=forums.img%>" type="text" id="img" name="forum[img]">
-        <div class="valid-feedback">유효한 입력입니다.</div>
+        <label for="img">이미지 추가</label>
+          <div class="input-group mb-3 mt-2">
+            <input type="file" class="form-control custom-file-label" id="img" name="img" multiple>
+          </div>
       </div>
       <div class="mb-3">
         <label class="form-label" for="date">수정한 시간</label>
