@@ -22,7 +22,7 @@
       </div>
       <div class="mb-3">
         <% forums.imgs.forEach((img,i) => { %> 
-          <img src="<%=img.url%>" class="img-thumbnail" alt="">
+          <img src="<%=img.thumbnail%>" class="img-thumbnail" alt="">
           <div class="form-check-inline">
             <input id="delete<%=i%>" type="checkbox" name="deleteImg[]" value="<%=img.filename%>">
             <!-- value의 값이 deleteImg[]로 들어가 req.body를 파싱할 때 배열이 된다 -->
@@ -46,5 +46,3 @@
     <a href="/forums/<%=forums._id%>">뒤로</a>
   </div>
 </div>
-
-
