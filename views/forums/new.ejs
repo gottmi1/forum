@@ -2,8 +2,9 @@
   <div class="row">
     <h1 class="text-center">글 작성하기</h1>
     <div class="col-6 offset-3">
-      <form class="mb-3 validated-form" action="/forums" method="POST" novalidate>
+      <form class="mb-3 validated-form" action="/forums" method="POST" novalidate enctype="multipart/form-data">
         <!-- novalidate는 required등의 모든 요청을 방지함-->
+        <!-- html은 기본적으로 파일을 업로드 할 수 없는데 enctype을 줘서 파일을 업로드할 수 있도록 함 -->
         <div class="mb-3">
           <label class="form-label" for="title">제목</label>
           <input class="form-control" type="text" id="title" name="forum[title]" required>
@@ -16,9 +17,10 @@
           <div class="valid-feedback">유효한 입력입니다.</div>
         </div> -->
         <div class="mb-3">
-          <label class="form-label" for="img">이미지</label>
+          <input type="file" name="forum[img]" id="">
+          <!-- <label class="form-label" for="img">이미지</label>
           <input class="form-control" type="text" id="img" name="forum[img]">
-          <div class="valid-feedback">유효한 입력입니다.</div>
+          <div class="valid-feedback">유효한 입력입니다.</div> -->
         </div>
         <div class="mb-3">
           <label class="form-label" for="date">작성일자</label>

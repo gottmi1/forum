@@ -26,4 +26,8 @@
       </tbody>
       <%}%>
   </table>
+  <% if(currentUser) {%> 
     <a href="/forums/new" class="btn btn-primary">글쓰기</a>
+  <% } else {%> 
+    <a href="/login" class="btn btn-primary">로그인</a>
+  <% } %> 

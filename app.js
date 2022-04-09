@@ -1,3 +1,10 @@
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
+// process.env.NODE_ENV = 환경변수
+// 코드에 쓰이는 값을 git에 업로드하거나 할 때 공개하고 싶지 않을 때 .env를 사용하는 것 같다 예를들어 API KEY같은 것들
+console.log(process.env.CLOUDINARY_KEY);
+// 이렇게 .env내부에 있는 키,값에 접근할 수가 있다
 const express = require("express");
 const app = express();
 const path = require("path");
