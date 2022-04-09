@@ -7,10 +7,27 @@
       <h5 class="text-muted t-center">작성자 : <%= forums.author.username%></h5>
       <div class="card mb-4">
         <% if (forums.imgs) { %>
-          <% for(let img of forums.imgs) {%> 
-          <img src="<%=img.url%>" class="card-img-top" alt="...">
-          <% } %> 
+          <div id="forumImgCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          <% forums.imgs.forEach((img ,i) =>{ %> 
+            <div class="carousel-item <%= i === 0 ? 'active' : ''%>">
+              <img src="<%=img.url%>" class="d-block w-100" alt="...">
+            </div>
+          <% }) %> 
         <%}%>
+        </div>
+        <% if(forums.imgs.length > 1) {%> 
+        <button class="carousel-control-prev" type="button" data-bs-target="#forumImgCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#forumImgCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+        <% } %> 
+      </div>
+      
         <ul class="list-group list-group-flush">
           <li class="list-group-item"><%= forums.contents %></li>
           <li class="list-group-item"><%=forums.date%></li>
