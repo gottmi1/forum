@@ -15,8 +15,11 @@ module.exports.renderNewForum = (req, res) => {
 
 module.exports.createNewForum = async (req, res, next) => {
   const forum = new Forum(req.body.forum);
+  forum.imgs = req.files.map((f) => ({ url: f.path, filename: f.filename }));
+  // multer로 보낸 파일의 정보를 url과 filename을 포함한 배열로 만듬
   forum.author = req.user._id;
   await forum.save();
+  console.log(forum);
   req.flash("success", "게시물이 작성되었습니다.");
   res.redirect(`/forums/${forum._id}`);
 };

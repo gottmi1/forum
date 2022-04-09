@@ -6,7 +6,12 @@ const ForumSchema = new Schema({
   title: String,
   contents: String,
   date: String,
-  img: String,
+  imgs: [
+    {
+      url: String,
+      filename: String,
+    },
+  ],
   author: {
     type: Schema.Types.ObjectId,
     ref: "User",

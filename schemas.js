@@ -4,7 +4,7 @@ module.exports.forumSchema = Joi.object({
   forum: Joi.object({
     title: Joi.string().required(),
     contents: Joi.string().required(),
-    img: Joi.string(),
+    // img: Joi.string(),
     date: Joi.string(),
   }).required(),
 });

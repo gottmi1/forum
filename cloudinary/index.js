@@ -9,8 +9,7 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
   cloudinary,
-  folder: "forum",
-  allowedFormats: ["jpeg", "png", "jpg"],
+  params: { folder: "forum", allowedFormats: ["jpeg", "png", "jpg"] },
   // 업로드 가능한 확장자를 정해준다
 });
 // exports해야하기 때문에 변수로 저장
