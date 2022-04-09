@@ -1,4 +1,5 @@
 const Forum = require("../models/forum");
+const { cloudinary } = require("../cloudinary");
 
 module.exports.index = async (req, res) => {
   const forums = await Forum.find({}).populate("author");
@@ -56,6 +57,7 @@ module.exports.renderEditForum = async (req, res) => {
 
 module.exports.updateForum = async (req, res) => {
   const { id } = req.params;
+  console.log(req.body);
   // const forums = await Forum.findById(id);
   // if (!forums.author.equals(req.user._id)) {
   //   req.flash("del", "권한이 없습니다.");
@@ -68,6 +70,28 @@ module.exports.updateForum = async (req, res) => {
   forums.imgs.push(...img); // 배열이 아닌 별개 인수로 전달
   // 기존 이미지를 덮어쓰지 않고 추가하는 기능 밖에 없음. 이미지 삭제는 따로 진행함
   await forums.save();
+  if (req.body.deleteImg) {
+    for (let filename of req.body.deleteImg) {
+      await cloudinary.uploader.destroy(filename);
+      // cloudinary의 내장 메서드로, 삭제 된 이미지가 cloudinary서버에서도 삭제되게 해줌
+    }
+    await forums.updateOne({
+      $pull: {
+        //꺼낸다
+        imgs: {
+          //imgs 에서
+          filename: {
+            // filename 중에
+            $in: req.body.deleteImg,
+            //delteImg 값이 있는 애들만
+          },
+        },
+      },
+    });
+    console.log(forums);
+  }
+  // 현재 배열에서 체크박스가 체크된 이미지의 value에 해당하는 것만 지우도록 함
+
   req.flash("update", "게시물이 업데이트 되었습니다.");
   res.redirect(`/forums/${forums._id}`);
 };

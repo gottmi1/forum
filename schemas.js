@@ -7,6 +7,7 @@ module.exports.forumSchema = Joi.object({
     // img: Joi.string(),
     date: Joi.string(),
   }).required(),
+  deleteImg: Joi.array(),
 });
 
 module.exports.commentSchema = Joi.object({

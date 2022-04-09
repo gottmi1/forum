@@ -21,6 +21,17 @@
           </div>
       </div>
       <div class="mb-3">
+        <% forums.imgs.forEach((img,i) => { %> 
+          <img src="<%=img.url%>" class="img-thumbnail" alt="">
+          <div class="form-check-inline">
+            <input id="delete<%=i%>" type="checkbox" name="deleteImg[]" value="<%=img.filename%>">
+            <!-- value의 값이 deleteImg[]로 들어가 req.body를 파싱할 때 배열이 된다 -->
+            <label for="delete<%=i%>">삭제</label>
+            <!-- i값으로 매칭시켜줌 -->
+          </div>
+        <% }) %> 
+      </div>
+      <div class="mb-3">
         <label class="form-label" for="date">수정한 시간</label>
         <input class="form-control" type="text" name="forum[date]" id="date" 
         value="<%=new Date().toLocaleDateString()%> <%=new Date().toLocaleTimeString()%>" readonly>
